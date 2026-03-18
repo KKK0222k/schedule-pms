@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="schedulepms:war">
+    <output-path>$PROJECT_DIR$/../target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>schedulepms</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="schedulepms-1.0.0.war">
+      <element id="artifact" artifact-name="schedulepms:war exploded" />
+    </root>
+  </artifact>
+</component>

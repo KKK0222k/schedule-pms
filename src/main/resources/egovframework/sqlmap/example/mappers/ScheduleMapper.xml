@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kkk.schedulepms.schedule.service.impl.ScheduleMapper">
+
+    <select id="selectScheduleList" parameterType="com.kkk.schedulepms.schedule.service.ScheduleVO" resultType="com.kkk.schedulepms.schedule.service.ScheduleVO">
+        SELECT 
+               SCHEDULE_SN AS scheduleSn,
+               SCHEDULE_NM AS scheduleNm,
+               SCHEDULE_CN AS scheduleCn,
+               TO_CHAR(SCHEDULE_START_DE, 'YYYY-MM-DD') AS scheduleStartDe,
+               TO_CHAR(SCHEDULE_END_DE, 'YYYY-MM-DD') AS scheduleEndDe,
+               SCHEDULE_FILE_PATH AS scheduleFilePath,
+               SCHEDULE_FILE_NM AS scheduleFileNm,
+               SCHEDULE_FILE_ORG_NM AS scheduleFileOrgNm,
+               REGIST_DE AS registDe,
+               REGIST_ID AS registId,
+               UPDATE_DE AS updateDe,
+               UPDATE_ID AS updateId
+        FROM TB_SCHEDULE
+        WHERE 1=1
+        <if test="scheduleNm != null and scheduleNm != ''">
+            AND SCHEDULE_NM LIKE '%' || #{scheduleNm} || '%'
+        </if>
+        ORDER BY SCHEDULE_START_DE ASC, SCHEDULE_END_DE DESC
+    </select>
+
+    <select id="selectScheduleMapList" parameterType="com.kkk.schedulepms.schedule.service.ScheduleVO" resultType="com.kkk.schedulepms.schedule.service.ScheduleVO">
+        SELECT 
+               SCHEDULE_SN AS scheduleSn,
+               SCHEDULE_NM AS scheduleNm,
+               SCHEDULE_CN AS scheduleCn,
+               SCHEDULE_ADRES AS scheduleAdres,
+               TO_CHAR(SCHEDULE_START_DE, 'YYYY-MM-DD') AS scheduleStartDe,
+               TO_CHAR(SCHEDULE_END_DE, 'YYYY-MM-DD') AS scheduleEndDe,
+               T.LOC_GEOM.SDO_POINT.X AS locLon,
+               T.LOC_GEOM.SDO_POINT.Y AS locLat
+        FROM (
+            SELECT SCHEDULE_SN, SCHEDULE_NM, SCHEDULE_CN, SCHEDULE_START_DE, SCHEDULE_END_DE, SCHEDULE_ADRES,
+                   CASE WHEN LOC_GEOM IS NOT NULL THEN SDO_CS.TRANSFORM(LOC_GEOM, 4326) ELSE NULL END AS LOC_GEOM
+            FROM TB_SCHEDULE
+            WHERE LOC_GEOM IS NOT NULL
+            <if test="searchMonth != null and searchMonth != ''">
+              AND (
+                  TO_CHAR(SCHEDULE_START_DE, 'YYYY-MM') = #{searchMonth}
+                  OR TO_CHAR(SCHEDULE_END_DE, 'YYYY-MM') = #{searchMonth}
+                  OR (SCHEDULE_START_DE &lt; TO_DATE(#{searchMonth} || '-01', 'YYYY-MM-DD')
+                      AND SCHEDULE_END_DE &gt;= TO_DATE(#{searchMonth} || '-01', 'YYYY-MM-DD'))
+              )
+            </if>
+        ) T
+    </select>
+
+    <select id="selectScheduleDetail" parameterType="com.kkk.schedulepms.schedule.service.ScheduleVO" resultType="com.kkk.schedulepms.schedule.service.ScheduleVO">
+        SELECT 
+               SCHEDULE_SN AS scheduleSn,
+               SCHEDULE_NM AS scheduleNm,
+               SCHEDULE_CN AS scheduleCn,
+               TO_CHAR(SCHEDULE_START_DE, 'YYYY-MM-DD') AS scheduleStartDe,
+               TO_CHAR(SCHEDULE_END_DE, 'YYYY-MM-DD') AS scheduleEndDe,
+               SCHEDULE_FILE_PATH AS scheduleFilePath,
+               SCHEDULE_FILE_NM AS scheduleFileNm,
+               SCHEDULE_FILE_ORG_NM AS scheduleFileOrgNm,
+               REGIST_DE AS registDe,
+               REGIST_ID AS registId,
+               UPDATE_DE AS updateDe,
+               UPDATE_ID AS updateId,
+               T.LOC_GEOM.SDO_POINT.X AS locLon,
+               T.LOC_GEOM.SDO_POINT.Y AS locLat,
+               SCHEDULE_ADRES AS scheduleAdres
+        FROM (
+            SELECT SCHEDULE_SN, SCHEDULE_NM, SCHEDULE_CN, SCHEDULE_START_DE, SCHEDULE_END_DE,
+                   SCHEDULE_FILE_PATH, SCHEDULE_FILE_NM, SCHEDULE_FILE_ORG_NM, REGIST_DE, REGIST_ID, UPDATE_DE, UPDATE_ID, SCHEDULE_ADRES,
+                   CASE WHEN LOC_GEOM IS NOT NULL THEN SDO_CS.TRANSFORM(LOC_GEOM, 4326) ELSE NULL END AS LOC_GEOM
+            FROM TB_SCHEDULE
+            WHERE SCHEDULE_SN = #{scheduleSn}
+        ) T
+    </select>
+
+    <insert id="insertSchedule" parameterType="com.kkk.schedulepms.schedule.service.ScheduleVO">
+        INSERT INTO TB_SCHEDULE (
+            SCHEDULE_SN, 
+            SCHEDULE_NM, 
+            SCHEDULE_CN, 
+            SCHEDULE_START_DE, 
+            SCHEDULE_END_DE, 
+            SCHEDULE_FILE_PATH, 
+            SCHEDULE_FILE_NM, 
+            SCHEDULE_FILE_ORG_NM,
+            SCHEDULE_ADRES,
+            REGIST_DE, 
+            REGIST_ID,
+            LOC_GEOM
+        ) VALUES (
+            SEQ_SCHEDULE_SN.NEXTVAL,
+            #{scheduleNm, jdbcType=VARCHAR},
+            #{scheduleCn, jdbcType=VARCHAR},
+            TO_DATE(#{scheduleStartDe}, 'YYYY-MM-DD'),
+            TO_DATE(#{scheduleEndDe}, 'YYYY-MM-DD'),
+            #{scheduleFilePath, jdbcType=VARCHAR},
+            #{scheduleFileNm, jdbcType=VARCHAR},
+            #{scheduleFileOrgNm, jdbcType=VARCHAR},
+            #{scheduleAdres, jdbcType=VARCHAR},
+            SYSDATE,
+            #{registId, jdbcType=VARCHAR},
+            <if test="locLon != null and locLat != null">
+                SDO_GEOMETRY(2001, 4326, SDO_POINT_TYPE(#{locLon, jdbcType=NUMERIC}, #{locLat, jdbcType=NUMERIC}, NULL), NULL, NULL)
+            </if>
+            <if test="locLon == null or locLat == null">
+                NULL
+            </if>
+        )
+    </insert>
+
+    <update id="updateSchedule" parameterType="com.kkk.schedulepms.schedule.service.ScheduleVO">
+        UPDATE TB_SCHEDULE SET
+            SCHEDULE_NM = #{scheduleNm, jdbcType=VARCHAR},
+            SCHEDULE_CN = #{scheduleCn, jdbcType=VARCHAR},
+            SCHEDULE_START_DE = TO_DATE(#{scheduleStartDe}, 'YYYY-MM-DD'),
+            SCHEDULE_END_DE = TO_DATE(#{scheduleEndDe}, 'YYYY-MM-DD'),
+            <if test="scheduleFilePath != null and scheduleFilePath != ''">
+                SCHEDULE_FILE_PATH = #{scheduleFilePath, jdbcType=VARCHAR},
+                SCHEDULE_FILE_NM = #{scheduleFileNm, jdbcType=VARCHAR},
+                SCHEDULE_FILE_ORG_NM = #{scheduleFileOrgNm, jdbcType=VARCHAR},
+            </if>
+            <if test="locLon != null and locLat != null">
+                LOC_GEOM = SDO_GEOMETRY(2001, 4326, SDO_POINT_TYPE(#{locLon}, #{locLat}, NULL), NULL, NULL),
+            </if>
+            SCHEDULE_ADRES = #{scheduleAdres, jdbcType=VARCHAR},
+            UPDATE_DE = SYSDATE,
+            UPDATE_ID = #{updateId, jdbcType=VARCHAR}
+        WHERE SCHEDULE_SN = #{scheduleSn}
+    </update>
+
+    <delete id="deleteSchedule" parameterType="com.kkk.schedulepms.schedule.service.ScheduleVO">
+        DELETE FROM TB_SCHEDULE
+        WHERE SCHEDULE_SN = #{scheduleSn}
+    </delete>
+
+    <select id="selectUser" parameterType="com.kkk.schedulepms.schedule.service.UserVO" resultType="com.kkk.schedulepms.schedule.service.UserVO">
+        SELECT USR_ID AS usrId,
+               USR_PWD AS usrPwd,
+               EMAIL AS email,
+               AUTH_CD AS authCd,
+               REGIST_DE AS registDe
+        FROM USER_INFO
+        WHERE USR_ID = #{usrId} 
+          AND USR_PWD = #{usrPwd}
+          -- AND AUTH_CD IS NOT NULL -- For approved users if mapped
+    </select>
+
+    <select id="checkUserId" parameterType="String" resultType="int">
+        SELECT COUNT(*) 
+        FROM USER_INFO
+        WHERE USR_ID = #{usrId}
+    </select>
+    
+    <insert id="insertUser" parameterType="com.kkk.schedulepms.schedule.service.UserVO">
+        INSERT INTO USER_INFO (
+            USR_ID,
+            USR_PWD,
+            EMAIL,
+            AUTH_CD,
+            REGIST_DE
+        ) VALUES (
+            #{usrId},
+            #{usrPwd},
+            #{email},
+            'AUTH002', -- Default user permission
+            SYSDATE
+        )
+    </insert>
+
+</mapper>
