@@ -9,8 +9,5 @@
         <module name="schedulepms" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="schedulepms" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

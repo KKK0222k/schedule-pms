@@ -31,6 +31,8 @@ public class ScheduleController {
     @org.springframework.beans.factory.annotation.Value("${schedule.kakao.api.key}")
     private String kakaoApiKey;
 
+    @org.springframework.beans.factory.annotation.Value("${schedule.vworld.api.key}")
+    private String vworldApiKey;
     // ----- HTML View Mappings -----
     
     @RequestMapping(value = "/main.do", method = RequestMethod.GET)
@@ -46,6 +48,7 @@ public class ScheduleController {
     @RequestMapping(value = "/detail.do", method = RequestMethod.GET)
     public String detailView(@ModelAttribute("searchVO") ScheduleVO searchVO, ModelMap model) throws Exception {
         model.addAttribute("kakaoApiKey", kakaoApiKey);
+        model.addAttribute("vworldApiKey", vworldApiKey);
         model.addAttribute("scheduleSn", searchVO.getScheduleSn());
         return "schedule/detail";
     }
@@ -66,6 +69,7 @@ public class ScheduleController {
     @RequestMapping(value = "/map.do", method = RequestMethod.GET)
     public String mapView(ModelMap model) throws Exception {
         model.addAttribute("kakaoApiKey", kakaoApiKey);
+        model.addAttribute("vworldApiKey", vworldApiKey);
         return "schedule/map";
     }
 

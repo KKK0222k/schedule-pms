@@ -23,6 +23,12 @@ var ScheduleDetail = (function () {
                 deleteSchedule();
             }
         });
+
+        $("div.map-btn").find("button").on("click", function (){
+           const _btn = $(this);
+           _btn.id == "btnKakao" ? _btn.addClass("btn-primary") : _btn.addClass("btn-danger");
+           console.log(_btn);
+        });
     }
 
     function loadDetail() {

@@ -24,8 +24,10 @@
     
     <script>
         window.KAKAO_API_KEY = '${kakaoApiKey}';
+        window.VWORLD_API_KEY = '${vworldApiKey}';
     </script>
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoApiKey}&libraries=services"></script>
+    <script src="https://map.vworld.kr/js/vworldMapInit.js.do?apiKey=${vworldApiKey}"></script>
 
     <script>
         $(document).ready(function() {
@@ -54,6 +56,10 @@
         <div class="detail-group">
             <label>장소</label>
             <div class="content-box" id="detailAdres" style="margin-bottom: 10px; display: none;"></div>
+            <div class="btn-group map-btn">
+                <button type="button" class="btn btn-kakao" id="btnKakao">카카오</button>
+                <button type="button" class="btn btn-vworld" id="btnVworld">브이월드</button>
+            </div>
             <div id="scheduleMap" style="width: 100%; height: 300px; display: none; border-radius: 4px; border: 1px solid #ddd;"></div>
             <input type="hidden" id="locLon">
             <input type="hidden" id="locLat">
