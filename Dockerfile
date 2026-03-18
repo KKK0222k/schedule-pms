@@ -1,15 +1,15 @@
-FROM gradle:7.6-jdk17 AS build
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
 COPY . .
 
-RUN gradle war
+RUN mvn clean package -DskipTests
 
 FROM tomcat:9.0
 
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
-COPY --from=build /app/build/libs/*.war /usr/local/tomcat/webapps/ROOT.war
+COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
 
 EXPOSE 8080
 
